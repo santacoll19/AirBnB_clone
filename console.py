@@ -116,33 +116,35 @@ class HBNBCommand(cmd.Cmd):
     def do_create(self, args):
         """ Create an object of any class with given parameters."""
         args = args.split()
-        if len(args) == 0:
+        if not args:
             print("** class name missing **")
+            return
         elif args[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
-        else:
-            new_instance = HBNBCommand.classes[args[0]]()
-            for param in args[1:]:
-                key_value = param.split('=')
-                if len(key_value) == 2:
-                    key = key_value[0]
-                    value = key_value[1]
-                    if value[0] == '"' and value[-1] == '"':
-                        value = value[1:-
-                                      1].replace('_', ' ').replace('\"', '"')
-                    elif '.' in value:
-                        try:
-                            value = float(value)
-                        except ValueError:
-                            continue
-                    else:
-                        try:
-                            value = int(value)
-                        except ValueError:
-                            continue
-                    setattr(new_instance, key, value)
-        new_instance.save()
+            return
 
+        new_instance = HBNBCommand.classes[args[0]]()
+        for param in args[1:]:
+            key_value = param.split('=')
+            if len(key_value) != 2:
+                continue
+            key, value = key_value
+            if not hasattr(new_instance, key):
+                continue
+            if value[0] == '"' and value[-1] == '"':
+                value = value[1:-1].replace('_', ' ').replace('\"', '"')
+            elif '.' in value:
+                try:
+                    value = float(value)
+                except ValueError:
+                    continue
+            else:
+                try:
+                    value = int(value)
+                except ValueError:
+                    continue
+                setattr(new_instance, key, value)
+        new_instance.save()
         print(new_instance.id)
 
     def help_create(self):
