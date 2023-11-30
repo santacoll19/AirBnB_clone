@@ -2,8 +2,8 @@
 """ Console Module """
 import cmd
 import sys
+from models import storage
 from models.base_model import BaseModel
-from models.__init__ import storage
 from models.user import User
 from models.place import Place
 from models.state import State
@@ -29,6 +29,36 @@ class HBNBCommand(cmd.Cmd):
         'max_guest': int, 'price_by_night': int,
         'latitude': float, 'longitude': float
     }
+
+    def do_create(self, args):
+        """ Create an object of any class"""
+        if not args:
+            print("** class name missing **")
+            return
+        args = args.split(" ")
+        if args[0] not in HBNBCommand.classes:
+            print("** class doesn't exist **")
+            return
+        cls = HBNBCommand.classes[args[0]]
+        kwargs = {}
+        params = args[1:]
+        for param in params:
+            k, v = param.split('=')
+            if v == '':
+                continue
+            if v[0] == '"' and v[len(v)-1] == '"':
+                v = v.strip('"')
+                v = v.replace('_', ' ')
+                v = v.replace('"', '\"')
+            else:
+                try:
+                    v = eval(v)
+                except NameError:
+                    continue
+            kwargs[k] = v
+        new_instance = cls(**kwargs)
+        new_instance.save()
+        print(new_instance.id)
 
     def preloop(self):
         """Prints if isatty is false"""
@@ -113,37 +143,6 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, args):
-        """Creates a new instance of BaseModel"""
-        arg = args.split()
-        if not arg:
-            print("** class name missing **")
-        if arg[0] not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-        new_instance = HBNBCommand.classes[args[0]]()
-        for param in args[1:]:
-            key_value = param.split("=")
-            if len(key_value) != 2:
-                continue
-            if not hasattr(new_instance, key):
-                continue
-            key, value = key_value[0], key_value[1]
-            if value[0] == '"' and value[-1] == '"':
-                value = value[1:-1].replace('_', ' ').replace('\"', '"')
-            elif '.' in value:
-                try:
-                    value = float(value)
-                except ValueError:
-                    continue
-            else:
-                try:
-                    value = int(value)
-                except ValueError:
-                    continue
-                setattr(new_instance, key, value)
-        new_instance.save()
-        print(new_instance.id)
-
     def help_create(self):
         """ Help information for the create method """
         print("Creates a class of any type")
@@ -224,14 +223,14 @@ class HBNBCommand(cmd.Cmd):
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            cls = HBNBCommand.classes[args]
-            for v in storage.all(cls).values():
-                print_list.append(str(v))
+            for k, v in storage.all().items():
+                if k.split('.')[0] == args:
+                    print_list.append(str(v))
         else:
-            for v in storage.all().values():
+            for k, v in storage.all().items():
                 print_list.append(str(v))
 
-        print(print_list)
+        print("[{}]".format(", ".join(print_list)))
 
     def help_all(self):
         """ Help information for the all command """
