@@ -114,36 +114,34 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class with given parameter."""
-        arg = args.split()
-        if not arg:
+        """Creates a new instance of BaseModel"""
+        if not args:
             print("** class name missing **")
             return
-        elif args[0] not in HBNBCommand.classes:
+
+        arg = args.split()
+
+        if arg[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args[0]]()
-        for param in arg[1:]:
-            key_value = param.split('=')
-            if len(key_value) != 2:
+        cls = HBNBCommand.classes[args[0]]
+        kwargs = {}
+        params = args[1:]
+        for param in params:
+            k, v = param.split('=')
+            if v == '':
                 continue
-            key, value = key_value
-            if not hasattr(new_instance, key):
-                continue
-            value = value.replace('_', ' ')
-            if value[0] == '"' and value[-1] == '"':
-                value = value[1:-1].replace('\\"', '"')
-            elif '.' in value:
-                try:
-                    value = float(value)
-                except ValueError:
-                    continue
+            if v[0] == '"' and v[len(v)-1] == '"':
+                v = v.strip('"')
+                v = v.replace('_', ' ')
+                v = v.replace('"', '\"')
             else:
                 try:
-                    value = int(value)
-                except ValueError:
+                    v = eval(v)
+                except:
                     continue
-            setattr(new_instance, key, value)
+            kwargs[k] = v
+        new_instance = cls(**kwargs)
         new_instance.save()
         print(new_instance.id)
 
