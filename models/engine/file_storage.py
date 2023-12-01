@@ -12,9 +12,10 @@ class FileStorage:
         """Deletes obj from __objects if it’s inside"""
         if obj is None:
             return
-        key = "{}.{}".format(type(obj).__name__, obj.id)
+        key = "{}.{}".format(type(obj).__class__.__name__, obj.id)
         if key in FileStorage.__objects:
             del FileStorage.__objects[key]
+            FileStorage.save(self)
 
     def all(self, cls=None):
         """Returns the list of objects of one type of class"""
