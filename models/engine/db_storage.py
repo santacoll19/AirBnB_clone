@@ -37,12 +37,12 @@ class DBStorage:
         """all method"""
         new_dict = {}
         if cls is None:
-            for key, value in classes.items():
-                for obj in self.__session.query(value).all():
+            for value in classes.values():
+                for obj in self.__session.query(value):
                     key = obj.__class__.__name__ + "." + obj.id
                     new_dict[key] = obj
-        else:
-            for obj in self.__session.query(cls).all():
+        if cls in classes:
+            for obj in self.__session.query(classes[cls]):
                 key = obj.__class__.__name__ + "." + obj.id
                 new_dict[key] = obj
         return new_dict
