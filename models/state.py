@@ -15,8 +15,15 @@ class State(BaseModel, Base):
         name = Column(String(128), nullable=False)
         cities = relationship("City", backref="state",
                               cascade="all, delete-orphan")
-    if getenv('HBNB_TYPE_STORAGE') != 'db':
+    else:
         @property
         def cities(self):
-            all_cities = storage.all(City).values()
-            return [city for city in all_cities if city.state_id == self.id]
+            """Returns the list of City instances
+            with state_id equals to the current State.id"""
+            from models import storage
+            all_cities = storage.all(City)
+            state_cities = []
+            for city in all_cities.values():
+                if city.state_id == self.id:
+                    state_cities.append(city)
+            return state_cities
