@@ -3,11 +3,11 @@
 import json
 from models.base_model import BaseModel
 from models.user import User
-from models.place import Place
 from models.state import State
 from models.city import City
-from models.amenity import Amenity
 from models.review import Review
+from models.amenity import Amenity
+from models.place import Place
 
 
 class FileStorage:
@@ -15,15 +15,8 @@ class FileStorage:
     __file_path = 'file.json'
     __objects = {}
 
-    def delete(self, obj=None):
-        """Deletes obj from __objects if it’s inside"""
-        if obj:
-            key = "{}.{}".format(type(obj).__name__, obj.id)
-            if key in FileStorage.__objects:
-                del FileStorage.__objects[key]
-
     def all(self, cls=None):
-        """Returns the list of objects of one type of class"""
+        """Returns a dictionary of models currently in a spesific class"""
         if cls is None:
             return FileStorage.__objects
         else:
@@ -49,6 +42,7 @@ class FileStorage:
 
     def reload(self):
         """Loads storage dictionary from file"""
+
         classes = {
             'BaseModel': BaseModel, 'User': User, 'Place': Place,
             'State': State, 'City': City, 'Amenity': Amenity,
@@ -63,3 +57,12 @@ class FileStorage:
                         **val)
         except FileNotFoundError:
             pass
+
+    def delete(self, obj=None):
+        """Delete obj from __objects if it’s inside"""
+        if obj is None:
+            return
+        key = f"{obj.__class__.__name__}.{obj.id}"
+        if key in self.__objects:
+            del self.__objects[key]
+            self.save()
